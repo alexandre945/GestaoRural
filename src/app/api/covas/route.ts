@@ -51,17 +51,18 @@ export async function POST(request: Request) {
    export async function GET() {
   const { data, error } = await supabase
     .from("covas")
-    .select(`
-      id,
-      data,
-      quantidade,
-      talhao_id,
-      talhoes ( nome ),
-      covas_trabalhadores (
-        trabalhador_id,
-        trabalhadores ( nome, valor_diaria )
-      )
-    `)
+.select(`
+  id,
+  data,
+  quantidade,
+  talhao_id,
+  talhoes!inner ( nome ),
+  covas_trabalhadores (
+    trabalhador_id,
+    trabalhadores!inner ( nome, valor_diaria )
+  )
+`)
+
     .order("id", { ascending: true });
 
   if (error) {

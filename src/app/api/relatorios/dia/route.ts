@@ -41,28 +41,32 @@ export async function GET(request: Request) {
   const total_covas = covas.reduce((sum, c) => sum + c.quantidade, 0);
   const por_talhao: Record<string, number> = {};
 
-  covas.forEach((c) => {
-    const nome = c.talhoes.nome;
-    por_talhao[nome] = (por_talhao[nome] || 0) + c.quantidade;
-  });
+covas.forEach((c) => {
+  const nome =
+    c.talhoes?.nome ??
+    c.talhoes?.[0]?.nome ??
+    "Talhão Desconhecido";
 
-  const trabalhadoresMap = new Map();
+  por_talhao[nome] = (por_talhao[nome] || 0) + c.quantidade;
+});
 
-  covas.forEach((c) => {
-    c.covas_trabalhadores.forEach((t) => {
-      const trab = t.trabalhadores;
+const trabalhadoresMap = new Map();
+
+covas.forEach((c) => {
+  c.covas_trabalhadores.forEach((t) => {
+
+    const trab =
+      t.trabalhadores?.nome
+        ? t.trabalhadores
+        : t.trabalhadores?.[0] ?? null;
+
+    if (trab) {
       trabalhadoresMap.set(trab.nome, trab.valor_diaria);
-    });
+    }
+
   });
+});
 
-  const trabalhadores_envolvidos = [...trabalhadoresMap].map(
-    ([nome, valor_diaria]) => ({ nome, valor_diaria })
-  );
-
-  const total_mao_de_obra = trabalhadores_envolvidos.reduce(
-    (sum, t) => sum + t.valor_diaria,
-    0
-  );
 
   return Response.json({
     data,
