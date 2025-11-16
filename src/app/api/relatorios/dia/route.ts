@@ -50,14 +50,10 @@ export async function GET(request: Request) {
   const por_talhao: Record<string, number> = {};
 
   covas.forEach((c) => {
-    // talhoes pode vir como array OU objeto → tratar seguro
-    const nomeTalhao = Array.isArray(c.talhoes)
-      ? c.talhoes[0]?.nome
-      : c.talhoes?.nome;
- 
-    const chave = nomeTalhao ?? "Talhão Desconhecido";
+    // Supabase sempre retorna array → acesso seguro
+    const nomeTalhao = c.talhoes?.[0]?.nome ?? "Talhão Desconhecido";
 
-    por_talhao[chave] = (por_talhao[chave] || 0) + c.quantidade;
+    por_talhao[nomeTalhao] = (por_talhao[nomeTalhao] || 0) + c.quantidade;
   });
 
   // ---------- TRABALHADORES ENVOLVIDOS (únicos) ----------
@@ -65,10 +61,8 @@ export async function GET(request: Request) {
 
   covas.forEach((c) => {
     c.covas_trabalhadores.forEach((t) => {
-      // trabalhadores pode vir como array OU objeto
-      const trab = Array.isArray(t.trabalhadores)
-        ? t.trabalhadores[0]
-        : t.trabalhadores;
+      // também array
+      const trab = t.trabalhadores?.[0];
 
       if (trab) {
         trabalhadoresMap.set(trab.nome, trab.valor_diaria);
