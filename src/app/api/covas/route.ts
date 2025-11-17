@@ -48,21 +48,20 @@ export async function POST(request: Request) {
 }
 //rota get para buscar numeros de covas de um trabalhador pelo id
 
-   export async function GET() {
+export async function GET() {
   const { data, error } = await supabase
     .from("covas")
-.select(`
-  id,
-  data,
-  quantidade,
-  talhao_id,
-  talhoes!inner ( nome ),
-  covas_trabalhadores (
-    trabalhador_id,
-    trabalhadores!inner ( nome, valor_diaria )
-  )
-`)
-
+    .select(`
+      id,
+      data,
+      quantidade,
+      talhao_id,
+      talhoes ( id, nome ),
+      covas_trabalhadores (
+        trabalhador_id,
+        trabalhadores ( id, nome, valor_diaria )
+      )
+    `)
     .order("id", { ascending: true });
 
   if (error) {

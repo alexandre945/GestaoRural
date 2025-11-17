@@ -10,9 +10,7 @@ export default function CovasPage() {
   const [data, setData] = useState("");
   const [quantidade, setQuantidade] = useState("");
   const [talhaoId, setTalhaoId] = useState("");
-  const [trabalhadoresSelecionados, setTrabalhadoresSelecionados] = useState<
-    number[]
-  >([]);
+  const [trabalhadoresSelecionados, setTrabalhadoresSelecionados] = useState<number[]>([]);
 
   const carregar = async () => {
     const resCovas = await fetch("/api/covas");
@@ -127,12 +125,13 @@ export default function CovasPage() {
       <div className="space-y-4">
         {covas.map((c) => (
           <div key={c.id} className="bg-white p-4 rounded shadow">
+
             <p><b>Data:</b> {c.data}</p>
             <p><b>Quantidade:</b> {c.quantidade}</p>
 
-            {/* CORREÇÃO FINAL DO TALHÃO */}
+            {/* TALHÃO COMO OBJETO */}
             <p>
-              <b>Talhão:</b> {c.talhoes?.[0]?.nome ?? "Desconhecido"}
+              <b>Talhão:</b> {c.talhoes?.nome ?? "Desconhecido"}
             </p>
 
             <p className="mt-2">
@@ -141,7 +140,7 @@ export default function CovasPage() {
 
             <ul className="list-disc pl-6">
               {c.covas_trabalhadores?.map((ct: any) => {
-                const trab = ct.trabalhadores?.[0];
+                const trab = ct.trabalhadores;
                 return (
                   <li key={ct.trabalhador_id}>
                     {trab?.nome ?? "Sem nome"} — 
@@ -157,6 +156,7 @@ export default function CovasPage() {
             >
               Excluir
             </button>
+
           </div>
         ))}
       </div>
