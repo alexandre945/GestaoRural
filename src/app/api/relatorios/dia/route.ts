@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     );
   }
 
-  // Buscar todas as covas do dia, incluindo talhão e trabalhadores
+  // Buscar covas + talhão + trabalhadores
   const { data: covas, error } = await supabase
     .from("covas")
     .select(`
@@ -19,18 +19,16 @@ export async function GET(request: Request) {
       data,
       quantidade,
       talhao_id,
-      talhoes ( nome ),
+      talhoes ( id, nome ),
       covas_trabalhadores (
         trabalhador_id,
-        trabalhadores ( nome, valor_diaria )
+        trabalhadores ( id, nome, valor_diaria )
       )
     `)
     .eq("data", dataFiltro);
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-    });
+    return Response.json({ error: error.message }, { status: 500 });
   }
 
   if (!covas || covas.length === 0) {
@@ -43,47 +41,39 @@ export async function GET(request: Request) {
     });
   }
 
-  // ---------- SOMA TOTAL DE COVAS ----------
+  // Total geral
   const total_covas = covas.reduce((acc, c) => acc + c.quantidade, 0);
 
-  // ---------- AGRUPAR COVAS POR TALHÃO ----------
+  // AGRUPAR TALHÃO (OBJETO)
   const por_talhao: Record<string, number> = {};
-
   covas.forEach((c) => {
-    // Supabase sempre retorna array → acesso seguro
-    const nomeTalhao = c.talhoes?.[0]?.nome ?? "Talhão Desconhecido";
-
+    const nomeTalhao = c.talhoes?.nome ?? "Talhão Desconhecido";
     por_talhao[nomeTalhao] = (por_talhao[nomeTalhao] || 0) + c.quantidade;
   });
 
-  // ---------- TRABALHADORES ENVOLVIDOS (únicos) ----------
-  const trabalhadoresMap = new Map<string, number>();
+  // TRABALHADORES (OBJETO)
+  const trabMap = new Map<string, number>();
 
   covas.forEach((c) => {
-    c.covas_trabalhadores.forEach((t) => {
-      // também array
-      const trab = t.trabalhadores?.[0];
-
-      if (trab) {
-        trabalhadoresMap.set(trab.nome, trab.valor_diaria);
+    c.covas_trabalhadores?.forEach((ct) => {
+      const t = ct.trabalhadores;
+      if (t) {
+        trabMap.set(t.nome, t.valor_diaria);
       }
     });
   });
 
-  const trabalhadores_envolvidos = Array.from(trabalhadoresMap).map(
-    ([nome, valor]) => ({
-      nome,
-      valor_diaria: valor,
-    })
-  );
+  const trabalhadores_envolvidos = Array.from(trabMap).map(([nome, valor]) => ({
+    nome,
+    valor_diaria: valor,
+  }));
 
-  // ---------- TOTAL DE MÃO DE OBRA ----------
   const total_mao_de_obra = trabalhadores_envolvidos.reduce(
     (acc, t) => acc + t.valor_diaria,
     0
   );
 
-  // ----------- RETORNO FINAL DO RELATÓRIO ---------
+  // Saída final
   return Response.json({
     data: dataFiltro,
     total_covas,
