@@ -2,9 +2,27 @@
 
 import { useState } from "react";
 
+type RelatorioTalhao = {
+  talhao: string;
+  covas: number;
+};
+
+type RelatorioTrabalhador = {
+  nome: string;
+  valor_diaria: number;
+};
+
+type RelatorioDia = {
+  data: string;
+  total_covas: number;
+  por_talhao: RelatorioTalhao[];
+  trabalhadores_envolvidos: RelatorioTrabalhador[];
+  total_mao_de_obra: number;
+};
+
 export default function RelatorioPage() {
   const [data, setData] = useState("");
-  const [resultado, setResultado] = useState<any>(null);
+  const [resultado, setResultado] = useState<RelatorioDia | null>(null);
   const [carregando, setCarregando] = useState(false);
 
   const gerarRelatorio = async () => {
@@ -27,7 +45,7 @@ export default function RelatorioPage() {
 
       {/* FORM */}
       <div className="bg-white p-4 rounded shadow mb-6 space-y-4">
-       
+
         <input
           type="date"
           className="p-2 border rounded w-full"
@@ -48,7 +66,7 @@ export default function RelatorioPage() {
 
       {resultado && (
         <div className="bg-white p-4 rounded shadow space-y-4">
-          
+
           <h2 className="text-xl font-bold mb-2">📅 {resultado.data}</h2>
 
           <p className="text-lg">
@@ -57,26 +75,34 @@ export default function RelatorioPage() {
 
           <div>
             <h3 className="font-semibold mb-2">🌱 Covas por talhão:</h3>
-            <ul className="list-disc pl-6">
-              {resultado.por_talhao.map((item: any, idx: number) => (
-                <li key={idx}>
-                  <b>{item.talhao}</b>: {item.covas}
-                </li>
-              ))}
-            </ul>
+
+            {resultado.por_talhao.length === 0 ? (
+              <p>Nenhum talhão registrado.</p>
+            ) : (
+              <ul className="list-disc pl-6">
+                {resultado.por_talhao.map((item, idx) => (
+                  <li key={idx}>
+                    <b>{item.talhao}</b>: {item.covas}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div>
             <h3 className="font-semibold mb-2">👷‍♂️ Trabalhadores envolvidos:</h3>
-            <ul className="list-disc pl-6">
-              {resultado.trabalhadores_envolvidos.map(
-                (t: any, idx: number) => (
+
+            {resultado.trabalhadores_envolvidos.length === 0 ? (
+              <p>Nenhum trabalhador registrado.</p>
+            ) : (
+              <ul className="list-disc pl-6">
+                {resultado.trabalhadores_envolvidos.map((t, idx) => (
                   <li key={idx}>
                     {t.nome} — R$ {t.valor_diaria}
                   </li>
-                )
-              )}
-            </ul>
+                ))}
+              </ul>
+            )}
           </div>
 
           <p className="text-lg">

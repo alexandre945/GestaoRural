@@ -78,7 +78,7 @@ export default function CovasPage() {
         <input
           type="number"
           placeholder="Quantidade de covas"
-          className="p-2 border rounded w-full"
+          className="p-p2 border rounded w-full"
           value={quantidade}
           onChange={(e) => setQuantidade(e.target.value)}
         />
@@ -129,17 +129,26 @@ export default function CovasPage() {
           <div key={c.id} className="bg-white p-4 rounded shadow">
             <p><b>Data:</b> {c.data}</p>
             <p><b>Quantidade:</b> {c.quantidade}</p>
-            <p><b>Talhão:</b> {c.talhoes?.nome}</p>
+
+            {/* CORREÇÃO FINAL DO TALHÃO */}
+            <p>
+              <b>Talhão:</b> {c.talhoes?.[0]?.nome ?? "Desconhecido"}
+            </p>
 
             <p className="mt-2">
               <b>Trabalhadores:</b>
             </p>
+
             <ul className="list-disc pl-6">
-              {c.covas_trabalhadores?.map((ct: any) => (
-                <li key={ct.trabalhador_id}>
-                  {ct.trabalhadores.nome} — R$ {ct.trabalhadores.valor_diaria.toFixed(2).replace(".", ",")}
-                </li>
-              ))}
+              {c.covas_trabalhadores?.map((ct: any) => {
+                const trab = ct.trabalhadores?.[0];
+                return (
+                  <li key={ct.trabalhador_id}>
+                    {trab?.nome ?? "Sem nome"} — 
+                    R$ {trab?.valor_diaria?.toFixed(2).replace(".", ",") ?? "0,00"}
+                  </li>
+                );
+              })}
             </ul>
 
             <button
