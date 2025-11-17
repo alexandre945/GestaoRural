@@ -11,7 +11,6 @@ export async function GET(request: Request) {
     );
   }
 
-  // Buscar covas + talhão + trabalhadores
   const { data: covas, error } = await supabase
     .from("covas")
     .select(`
@@ -28,7 +27,9 @@ export async function GET(request: Request) {
     .eq("data", dataFiltro);
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+    });
   }
 
   if (!covas || covas.length === 0) {
@@ -41,39 +42,45 @@ export async function GET(request: Request) {
     });
   }
 
-  // Total geral
   const total_covas = covas.reduce((acc, c) => acc + c.quantidade, 0);
 
-  // AGRUPAR TALHÃO (OBJETO)
   const por_talhao: Record<string, number> = {};
+
   covas.forEach((c) => {
-    const nomeTalhao = c.talhoes?.nome ?? "Talhão Desconhecido";
-    por_talhao[nomeTalhao] = (por_talhao[nomeTalhao] || 0) + c.quantidade;
+    const nomeTalhao = Array.isArray(c.talhoes)
+      ? c.talhoes[0]?.nome
+      : c.talhoes?.nome;
+
+    const chave = nomeTalhao ?? "Talhão Desconhecido";
+    por_talhao[chave] = (por_talhao[chave] || 0) + c.quantidade;
   });
 
-  // TRABALHADORES (OBJETO)
   const trabMap = new Map<string, number>();
 
   covas.forEach((c) => {
     c.covas_trabalhadores?.forEach((ct) => {
-      const t = ct.trabalhadores;
-      if (t) {
-        trabMap.set(t.nome, t.valor_diaria);
+      const trab = Array.isArray(ct.trabalhadores)
+        ? ct.trabalhadores[0]
+        : ct.trabalhadores;
+
+      if (trab) {
+        trabMap.set(trab.nome, trab.valor_diaria);
       }
     });
   });
 
-  const trabalhadores_envolvidos = Array.from(trabMap).map(([nome, valor]) => ({
-    nome,
-    valor_diaria: valor,
-  }));
+  const trabalhadores_envolvidos = Array.from(trabMap.entries()).map(
+    ([nome, valor_diaria]) => ({
+      nome,
+      valor_diaria,
+    })
+  );
 
   const total_mao_de_obra = trabalhadores_envolvidos.reduce(
     (acc, t) => acc + t.valor_diaria,
     0
   );
 
-  // Saída final
   return Response.json({
     data: dataFiltro,
     total_covas,
