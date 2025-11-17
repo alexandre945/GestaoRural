@@ -1,117 +1,90 @@
-"use client";
+import { supabase } from "@/lib/supabase";
 
-import { useState } from "react";
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const dataFiltro = searchParams.get("data");
 
-type RelatorioTalhao = {
-  talhao: string;
-  covas: number;
-};
+  if (!dataFiltro) {
+    return new Response(
+      JSON.stringify({ error: "A data é obrigatória (?data=YYYY-MM-DD)" }),
+      { status: 400 }
+    );
+  }
 
-type RelatorioTrabalhador = {
-  nome: string;
-  valor_diaria: number;
-};
+  const { data: covas, error } = await supabase
+    .from("covas")
+    .select(`
+      id,
+      data,
+      quantidade,
+      talhao_id,
+      talhoes ( id, nome ),
+      covas_trabalhadores (
+        trabalhador_id,
+        trabalhadores ( id, nome, valor_diaria )
+      )
+    `)
+    .eq("data", dataFiltro);
 
-type RelatorioDia = {
-  data: string;
-  total_covas: number;
-  por_talhao: RelatorioTalhao[];
-  trabalhadores_envolvidos: RelatorioTrabalhador[];
-  total_mao_de_obra: number;
-};
+  if (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+    });
+  }
 
-export default function RelatorioPage() {
-  const [data, setData] = useState("");
-  const [resultado, setResultado] = useState<RelatorioDia | null>(null);
-  const [carregando, setCarregando] = useState(false);
+  if (!covas || covas.length === 0) {
+    return Response.json({
+      data: dataFiltro,
+      total_covas: 0,
+      por_talhao: [],
+      trabalhadores_envolvidos: [],
+      total_mao_de_obra: 0,
+    });
+  }
 
-  const gerarRelatorio = async () => {
-    if (!data) return alert("Selecione uma data.");
+  // Total de covas
+  const total_covas = covas.reduce((acc, c) => acc + c.quantidade, 0);
 
-    setCarregando(true);
-    setResultado(null);
+  // Agrupar covas por talhão
+  const por_talhao: Record<string, number> = {};
 
-    const res = await fetch(`/api/relatorios/dia?data=${data}`);
-    const json = await res.json();
+  covas.forEach((c) => {
+    const nomeTalhao = c.talhoes?.nome ?? "Talhão Desconhecido";
+    por_talhao[nomeTalhao] = (por_talhao[nomeTalhao] || 0) + c.quantidade;
+  });
 
-    setResultado(json);
-    setCarregando(false);
-  };
+  // Trabalhadores únicos
+  const trabMap = new Map<string, number>();
 
-  return (
-    <div className="p-6 max-w-2xl mx-auto">
+  covas.forEach((c) => {
+    c.covas_trabalhadores?.forEach((ct) => {
+      const trab = ct.trabalhadores; // agora é OBJETO
+      if (trab) {
+        trabMap.set(trab.nome, trab.valor_diaria);
+      }
+    });
+  });
 
-      <h1 className="text-2xl font-bold mb-6">📊 Relatório Diário</h1>
-
-      {/* FORM */}
-      <div className="bg-white p-4 rounded shadow mb-6 space-y-4">
-
-        <input
-          type="date"
-          className="p-2 border rounded w-full"
-          value={data}
-          onChange={(e) => setData(e.target.value)}
-        />
-
-        <button
-          onClick={gerarRelatorio}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Gerar Relatório
-        </button>
-      </div>
-
-      {/* RESULTADO */}
-      {carregando && <p>Carregando relatório...</p>}
-
-      {resultado && (
-        <div className="bg-white p-4 rounded shadow space-y-4">
-
-          <h2 className="text-xl font-bold mb-2">📅 {resultado.data}</h2>
-
-          <p className="text-lg">
-            <b>Total de covas no dia:</b> {resultado.total_covas}
-          </p>
-
-          <div>
-            <h3 className="font-semibold mb-2">🌱 Covas por talhão:</h3>
-
-            {resultado.por_talhao.length === 0 ? (
-              <p>Nenhum talhão registrado.</p>
-            ) : (
-              <ul className="list-disc pl-6">
-                {resultado.por_talhao.map((item, idx) => (
-                  <li key={idx}>
-                    <b>{item.talhao}</b>: {item.covas}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-2">👷‍♂️ Trabalhadores envolvidos:</h3>
-
-            {resultado.trabalhadores_envolvidos.length === 0 ? (
-              <p>Nenhum trabalhador registrado.</p>
-            ) : (
-              <ul className="list-disc pl-6">
-                {resultado.trabalhadores_envolvidos.map((t, idx) => (
-                  <li key={idx}>
-                    {t.nome} — R$ {t.valor_diaria}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <p className="text-lg">
-            <b>Total mão de obra:</b> R$ {resultado.total_mao_de_obra}
-          </p>
-
-        </div>
-      )}
-
-    </div>
+  const trabalhadores_envolvidos = Array.from(trabMap.entries()).map(
+    ([nome, valor_diaria]) => ({
+      nome,
+      valor_diaria,
+    })
   );
+
+  const total_mao_de_obra = trabalhadores_envolvidos.reduce(
+    (acc, t) => acc + t.valor_diaria,
+    0
+  );
+
+  return Response.json({
+    data: dataFiltro,
+    total_covas,
+    por_talhao: Object.entries(por_talhao).map(([talhao, covas]) => ({
+      talhao,
+      covas,
+    })),
+    trabalhadores_envolvidos,
+    total_mao_de_obra,
+  });
 }
