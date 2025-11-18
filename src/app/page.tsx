@@ -31,6 +31,10 @@ export default function Home() {
         >
           📊 Relatórios
         </a>
+
+        <a href="/relatorios/semana" className="bg-white p-4 rounded-lg shadow hover:shadow-md transition text-center font-semibold" >
+         📆 Relatório Semanal
+        </a>
       </div>
     </div>
   );
