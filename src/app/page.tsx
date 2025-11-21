@@ -35,6 +35,20 @@ export default function Home() {
         <a href="/relatorios/semana" className="bg-white p-4 rounded-lg shadow hover:shadow-md transition text-center font-semibold" >
          📆 Relatório Semanal
         </a>
+        <a
+          href="/servicos"
+          className="bg-white p-4 rounded-lg shadow hover:shadow-md transition text-center font-semibold"
+        >
+          🛠️ Serviços
+        </a>
+        <a
+          href="/servicos/dia"
+          className="bg-white p-4 rounded-lg shadow hover:shadow-md transition text-center font-semibold"
+        >
+          🛠️ Registrar Serviço do Dia
+        </a>
+
+
       </div>
     </div>
   );

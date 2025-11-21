@@ -1,30 +1,24 @@
 import { supabase } from "@/lib/supabase";
 
-// Helpers de data sem depender de date-fns
-function formatISODate(d: Date) {
-  // yyyy-MM-dd
-  return d.toISOString().slice(0, 10);
+// Helpers sem depender de date-fns
+function formatISO(d: Date) {
+  return d.toISOString().slice(0, 10); // yyyy-MM-dd
 }
-
-function formatBRDate(d: Date) {
-  // dd/mm/aaaa
+function formatBR(d: Date) {
   return d.toLocaleDateString("pt-BR");
 }
 
-// Calcula segunda e sábado da semana da data base
+// Segunda a sábado da semana
 function getWeekRange(base: Date) {
-  // 0 = domingo, 1 = segunda, ..., 6 = sábado
   const day = base.getDay();
-
-  // Quantos dias passaram desde segunda
-  const diffToMonday = (day + 6) % 7; // segunda = 1 → 0, terça = 2 → 1, domingo = 0 → 6
+  const diffToMonday = (day + 6) % 7;
 
   const inicio = new Date(base);
   inicio.setDate(base.getDate() - diffToMonday);
   inicio.setHours(0, 0, 0, 0);
 
   const fim = new Date(inicio);
-  fim.setDate(inicio.getDate() + 5); // segunda + 5 = sábado
+  fim.setDate(inicio.getDate() + 5);
   fim.setHours(23, 59, 59, 999);
 
   return { inicio, fim };
@@ -41,102 +35,117 @@ export async function GET(request: Request) {
     );
   }
 
-  // Data base
-  const dataBase = new Date(dataFiltro);
-  if (isNaN(dataBase.getTime())) {
+  const base = new Date(dataFiltro);
+  if (isNaN(base.getTime())) {
     return Response.json(
-      { error: "Data inválida. Use o formato YYYY-MM-DD" },
+      { error: "Data inválida." },
       { status: 400 }
     );
   }
 
-  const { inicio, fim } = getWeekRange(dataBase);
+  const { inicio, fim } = getWeekRange(base);
 
-  // Buscar covas da semana (segunda → sábado)
-  const { data: covas, error } = await supabase
+  // =======================
+  // 1️⃣ Buscar COVAS da semana
+  // =======================
+  const { data: covas } = await supabase
     .from("covas")
     .select(`
-      id,
       data,
       covas_trabalhadores (
-        trabalhador_id,
         trabalhadores ( id, nome, valor_diaria )
       )
     `)
-    .gte("data", formatISODate(inicio))
-    .lte("data", formatISODate(fim));
+    .gte("data", formatISO(inicio))
+    .lte("data", formatISO(fim));
 
-  if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
-  }
+  // =======================
+  // 2️⃣ Buscar SERVIÇOS da semana
+  // =======================
+  const { data: servicos } = await supabase
+    .from("servicos_dia")
+    .select(`
+      data,
+      servicos_trabalhadores (
+        trabalhadores ( id, nome, valor_diaria )
+      )
+    `)
+    .gte("data", formatISO(inicio))
+    .lte("data", formatISO(fim));
 
-  if (!covas || covas.length === 0) {
-    return Response.json({
-      semana: {
-        inicio: formatBRDate(inicio),
-        fim: formatBRDate(fim),
-      },
-      trabalhadores: [],
-      total_geral: 0,
-    });
-  }
-
-  // Mapa: trabalhador_id -> { nome, valor_diaria, dias:Set<string> }
+  // =======================
+  // 3️⃣ Monta mapa geral
+  // trabalhador_id → dias trabalhados, nome e valor
+  // =======================
   const trabMap = new Map<
     number,
     { nome: string; valor_diaria: number; dias: Set<string> }
   >();
 
-  covas.forEach((cova: any) => {
-    const dia = cova.data as string;
+  // ---- COVAS ----
+  covas?.forEach((cova) => {
+    const dia = cova.data;
 
-    cova.covas_trabalhadores?.forEach((ct: any) => {
-      const trabRaw = ct.trabalhadores as any;
-      if (!trabRaw) return;
+    cova.covas_trabalhadores?.forEach((ct) => {
+      const raw = ct.trabalhadores;
+      const tr = Array.isArray(raw) ? raw[0] : raw;
+      if (!tr) return;
 
-      // Pode vir como objeto ou array, tratamos os dois jeitos
-      const trab = Array.isArray(trabRaw) ? trabRaw[0] : trabRaw;
-      if (!trab) return;
-
-      const id = trab.id as number;
-      const nome = trab.nome as string;
-      const valor_diaria = Number(trab.valor_diaria) || 0;
-
-      if (!trabMap.has(id)) {
-        trabMap.set(id, {
-          nome,
-          valor_diaria,
-          dias: new Set<string>(),
+      if (!trabMap.has(tr.id)) {
+        trabMap.set(tr.id, {
+          nome: tr.nome,
+          valor_diaria: Number(tr.valor_diaria),
+          dias: new Set(),
         });
       }
 
-      // Cada dia trabalhado conta 1 diária
-      trabMap.get(id)!.dias.add(dia);
+      trabMap.get(tr.id)!.dias.add(dia);
     });
   });
 
+  // ---- SERVIÇOS ----
+  servicos?.forEach((serv) => {
+    const dia = serv.data;
+
+    serv.servicos_trabalhadores?.forEach((st) => {
+      const raw = st.trabalhadores;
+      const tr = Array.isArray(raw) ? raw[0] : raw;
+      if (!tr) return;
+
+      if (!trabMap.has(tr.id)) {
+        trabMap.set(tr.id, {
+          nome: tr.nome,
+          valor_diaria: Number(tr.valor_diaria),
+          dias: new Set(),
+        });
+      }
+
+      trabMap.get(tr.id)!.dias.add(dia);
+    });
+  });
+
+  // =======================
+  // 4️⃣ Lista final
+  // =======================
   const trabalhadores = Array.from(trabMap.entries()).map(([id, obj]) => {
-    const dias_trabalhados = obj.dias.size;
-    const total_semana = dias_trabalhados * obj.valor_diaria;
+    const dias = obj.dias.size;
+    const total = dias * obj.valor_diaria;
 
     return {
       id,
       nome: obj.nome,
-      dias_trabalhados,
+      dias_trabalhados: dias,
       valor_diaria: obj.valor_diaria,
-      total_semana,
+      total_semana: total,
     };
   });
 
-  const total_geral = trabalhadores.reduce(
-    (acc, t) => acc + t.total_semana,
-    0
-  );
+  const total_geral = trabalhadores.reduce((acc, t) => acc + t.total_semana, 0);
 
   return Response.json({
     semana: {
-      inicio: formatBRDate(inicio),
-      fim: formatBRDate(fim),
+      inicio: formatBR(inicio),
+      fim: formatBR(fim),
     },
     trabalhadores,
     total_geral,
