@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -12,11 +12,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// ✔ Metadata SEM themeColor
 export const metadata: Metadata = {
   title: "jhone Company",
   description: "Sistema de relatório agrícola",
   manifest: "/manifest.json",
-  themeColor: "#ffffff"
+};
+
+// ✔ themeColor agora fica AQUI
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({
