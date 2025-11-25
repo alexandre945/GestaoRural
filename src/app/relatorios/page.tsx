@@ -20,6 +20,13 @@ export default function RelatorioPage() {
     setCarregando(false);
   };
 
+  // 👉 TOTAL PLANTADO (FUNCIONA PARA TODOS OS SERVIÇOS)
+  const totalGeralPlantado =
+    resultado?.servicos?.reduce(
+      (acc: number, item: any) => acc + Number(item.quantidade || 0),
+      0
+    ) || 0;
+
   return (
     <div className="p-6 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">📊 Relatório Diário</h1>
@@ -67,7 +74,7 @@ export default function RelatorioPage() {
               ))}
             </ul>
 
-                 {/* TRABALHADORES DAS COVAS */}
+            {/* TRABALHADORES DAS COVAS */}
             <div>
               <h3 className="font-semibold mt-2">👷 Trabalhadores das covas:</h3>
 
@@ -76,7 +83,6 @@ export default function RelatorioPage() {
                   return <p>Nenhum trabalhador registrado nas covas.</p>;
                 }
 
-                // pegar trabalhadores de cada cova
                 const trabalhadoresCovas = resultado.covas
                   .flatMap((c: any) =>
                     c.covas_trabalhadores.map((ct: any) => {
@@ -88,7 +94,6 @@ export default function RelatorioPage() {
                   )
                   .filter(Boolean);
 
-                // eliminar duplicados
                 const unicos = trabalhadoresCovas.filter(
                   (t: any, i: number, arr: any[]) =>
                     i === arr.findIndex((x) => x.id === t.id)
@@ -98,14 +103,16 @@ export default function RelatorioPage() {
                   <ul className="list-disc pl-6">
                     {unicos.map((t: any, idx: number) => (
                       <li key={idx}>
-                        {t.nome} — R$ {t.valor_diaria}
+                        {t.nome} — {Number(t.valor_diaria).toLocaleString("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        })}
                       </li>
                     ))}
                   </ul>
                 );
               })()}
             </div>
-
           </div>
 
           {/* ----------------- SERVIÇOS ----------------------------- */}
@@ -125,21 +132,23 @@ export default function RelatorioPage() {
                   return trab;
                 }) || [];
 
-                const nomeCafe = s.cafes?.nome || "Café não informado";
+              const nomeCafe = s.cafes?.nome || "Café não informado";
 
               return (
                 <div key={idx} className="border rounded p-3 mt-3">
                   <h4 className="font-semibold">
-                   SERVIÇO:  {s.servicos?.nome || "Serviço"}
+                    SERVIÇO: {s.servicos?.nome || "Serviço"}
                   </h4>
+
                   <h4 className="font-semibold">
-                    LOCAL:  {nomeCafe} — 
+                    LOCAL: {nomeCafe}
                   </h4>
-              
+
                   {/* QUANTIDADE */}
                   {s.servicos?.exige_quantidade && (
                     <p>
-                      Quantidade: <b>{(s.quantidade).toLocaleString("pt-BR")}</b>
+                      Quantidade:{" "}
+                      <b>{Number(s.quantidade).toLocaleString("pt-BR")}</b>
                     </p>
                   )}
 
@@ -151,10 +160,11 @@ export default function RelatorioPage() {
                     <ul className="list-disc pl-6">
                       {trabalhadores.map((t: any, i: number) => (
                         <li key={i}>
-                          {t.nome} — {Number(t.valor_diaria).toLocaleString("pt-BR", {
-                              style: "currency",
-                              currency: "BRL",
-                            })}
+                          {t.nome} —{" "}
+                          {Number(t.valor_diaria).toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                          })}
                         </li>
                       ))}
                     </ul>
@@ -165,14 +175,18 @@ export default function RelatorioPage() {
           </div>
 
           {/* ----------------- TOTAL GERAL ----------------------------- */}
-           <p className="text-lg mt-4">
-              <b>Total mão de obra:</b>{" "}
-              {Number(resultado.total_mao_de_obra).toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
-            </p>
+          <p className="text-lg mt-4">
+            <b>Total mão de obra:</b>{" "}
+            {Number(resultado.total_mao_de_obra).toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+          </p>
 
+          <p className="text-lg mt-2">
+            <b>Total geral plantado:</b>{" "}
+            {totalGeralPlantado.toLocaleString("pt-BR")} mudas
+          </p>
         </div>
       )}
     </div>
