@@ -125,16 +125,21 @@ export default function RelatorioPage() {
                   return trab;
                 }) || [];
 
+                const nomeCafe = s.cafes?.nome || "Café não informado";
+
               return (
                 <div key={idx} className="border rounded p-3 mt-3">
                   <h4 className="font-semibold">
-                    {s.servicos?.nome || "Serviço"}
+                   SERVIÇO:  {s.servicos?.nome || "Serviço"}
                   </h4>
-
+                  <h4 className="font-semibold">
+                    LOCAL:  {nomeCafe} — 
+                  </h4>
+              
                   {/* QUANTIDADE */}
                   {s.servicos?.exige_quantidade && (
                     <p>
-                      Quantidade: <b>{s.quantidade}</b>
+                      Quantidade: <b>{(s.quantidade).toLocaleString("pt-BR")}</b>
                     </p>
                   )}
 
@@ -146,7 +151,10 @@ export default function RelatorioPage() {
                     <ul className="list-disc pl-6">
                       {trabalhadores.map((t: any, i: number) => (
                         <li key={i}>
-                          {t.nome} — R$ {t.valor_diaria}
+                          {t.nome} — {Number(t.valor_diaria).toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            })}
                         </li>
                       ))}
                     </ul>
@@ -157,9 +165,14 @@ export default function RelatorioPage() {
           </div>
 
           {/* ----------------- TOTAL GERAL ----------------------------- */}
-          <p className="text-lg mt-4">
-            <b>Total mão de obra:</b> R$ {resultado.total_mao_de_obra}
-          </p>
+           <p className="text-lg mt-4">
+              <b>Total mão de obra:</b>{" "}
+              {Number(resultado.total_mao_de_obra).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </p>
+
         </div>
       )}
     </div>
