@@ -20,13 +20,6 @@ export default function RelatorioPage() {
     setCarregando(false);
   };
 
-  // 👉 TOTAL PLANTADO (FUNCIONA PARA TODOS OS SERVIÇOS)
-  const totalGeralPlantado =
-    resultado?.servicos?.reduce(
-      (acc: number, item: any) => acc + Number(item.quantidade || 0),
-      0
-    ) || 0;
-
   return (
     <div className="p-6 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">📊 Relatório Diário</h1>
@@ -62,14 +55,15 @@ export default function RelatorioPage() {
             <h3 className="text-lg font-semibold">🌱 COVAS</h3>
 
             <p>
-              <b>Total de covas:</b> {resultado.total_covas}
+              <b>Total de covas:</b>{" "}
+              {resultado.total_covas.toLocaleString("pt-BR")}
             </p>
 
             <h4 className="font-semibold mt-3">Por talhão:</h4>
             <ul className="list-disc pl-6">
               {resultado.por_talhao.map((item: any, idx: number) => (
                 <li key={idx}>
-                  <b>{item.talhao}:</b> {item.covas}
+                  <b>{item.talhao}:</b> {item.covas.toLocaleString("pt-BR")}
                 </li>
               ))}
             </ul>
@@ -103,7 +97,8 @@ export default function RelatorioPage() {
                   <ul className="list-disc pl-6">
                     {unicos.map((t: any, idx: number) => (
                       <li key={idx}>
-                        {t.nome} — {Number(t.valor_diaria).toLocaleString("pt-BR", {
+                        {t.nome} —{" "}
+                        {Number(t.valor_diaria).toLocaleString("pt-BR", {
                           style: "currency",
                           currency: "BRL",
                         })}
@@ -119,9 +114,7 @@ export default function RelatorioPage() {
           <div>
             <h3 className="text-lg font-semibold">🛠 SERVIÇOS</h3>
 
-            {resultado.servicos.length === 0 && (
-              <p>Nenhum serviço registrado.</p>
-            )}
+            {resultado.servicos.length === 0 && <p>Nenhum serviço registrado.</p>}
 
             {resultado.servicos.map((s: any, idx: number) => {
               const trabalhadores =
@@ -141,8 +134,9 @@ export default function RelatorioPage() {
                   </h4>
 
                   <h4 className="font-semibold">
-                    LOCAL: {nomeCafe}
+                    LOCAL: {resultado.nome_cafe_historico}
                   </h4>
+
 
                   {/* QUANTIDADE */}
                   {s.servicos?.exige_quantidade && (
@@ -185,7 +179,7 @@ export default function RelatorioPage() {
 
           <p className="text-lg mt-2">
             <b>Total geral plantado:</b>{" "}
-            {totalGeralPlantado.toLocaleString("pt-BR")} mudas
+            {resultado.total_geral_plantado.toLocaleString("pt-BR")} mudas
           </p>
         </div>
       )}
