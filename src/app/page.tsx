@@ -66,6 +66,13 @@ export default function Home() {
           👨‍🌾 Trabalhadores
         </a>
 
+                <a
+          href="/cafes"
+          className="bg-white p-4 rounded-lg shadow hover:shadow-md transition text-center font-semibold"
+        >
+          ☕ Cafés
+        </a>
+
         <a
           href="/covas"
           className="bg-white p-4 rounded-lg shadow hover:shadow-md transition text-center font-semibold"
@@ -100,6 +107,8 @@ export default function Home() {
         >
           🛠️ Registrar Serviço do Dia
         </a>
+
+
       </div>
     </div>
   );
