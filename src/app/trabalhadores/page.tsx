@@ -45,7 +45,7 @@ export default function TrabalhadoresPage() {
       <h1 className="text-2xl font-bold mb-6">👨‍🌾 Trabalhadores</h1>
 
       {/* Criar trabalhador */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-col sm:flex-row gap-2 mb-6">
         <input
           className="flex-1 p-2 border rounded"
           placeholder="Nome"
@@ -63,7 +63,7 @@ export default function TrabalhadoresPage() {
 
         <button
           onClick={criar}
-          className="bg-blue-500 text-white px-4 rounded hover:bg-blue-600"
+          className="bg-green-500 p-2 text-white px-4 rounded hover:bg-blue-600"
         >
           Adicionar
         </button>

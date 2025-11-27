@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   title: "jhone Company",
   description: "Sistema de relatório agrícola",
   manifest: "/manifest.json",
+  themeColor: "#ffffff",
 };
 
 // ✔ themeColor agora fica AQUI

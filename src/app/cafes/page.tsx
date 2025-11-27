@@ -51,7 +51,8 @@ export default function CafesPage() {
   }, []);
 
   return (
-    <div className="max-w-xl mx-auto mt-10 space-y-6">
+
+    <div className="p-6 max-w-xl mx-auto">
 
       <h1 className="text-2xl font-bold text-center">Cadastro de Cafés ☕</h1>
 
@@ -63,7 +64,7 @@ export default function CafesPage() {
       )}
 
       {/* Formulário */}
-      <form onSubmit={cadastrarCafe} className="flex gap-2">
+      <form onSubmit={cadastrarCafe} className="flex flex-col sm:flex-row gap-2">
         <input
           type="text"
           value={nome}
@@ -72,7 +73,9 @@ export default function CafesPage() {
           className="flex-1 border rounded p-2"
           required
         />
-        <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        <button
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 
+                    mx-2 sm:mx-4 mb-2">
           Salvar
         </button>
       </form>

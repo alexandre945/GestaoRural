@@ -41,7 +41,7 @@ export default function TalhoesPage() {
       <h1 className="text-2xl font-bold mb-6">🌱 Talhões</h1>
 
       {/* Criar talhão */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-col sm:flex-row gap-2 mb-6">
         <input
           className="flex-1 p-2 border rounded"
           placeholder="Nome do talhão"
@@ -51,7 +51,7 @@ export default function TalhoesPage() {
 
         <button
           onClick={criarTalhao}
-          className="bg-green-500 text-white px-4 rounded hover:bg-green-600"
+          className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
         >
           Adicionar
         </button>
