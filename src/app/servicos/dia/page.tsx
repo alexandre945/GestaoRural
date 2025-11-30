@@ -77,7 +77,7 @@ export default function ServicosDiaPage() {
       <h1 className="text-2xl font-bold mb-6">🗓️ Registrar Serviço do Dia</h1>
 
       {/* FORM */}
-      <div className="bg-white p-4 rounded shadow mb-8 space-y-4">
+      <div className=" p-4 rounded shadow mb-8 space-y-4">
 
         <input
           type="date"
