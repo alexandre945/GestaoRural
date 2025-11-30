@@ -125,8 +125,12 @@ export default function RelatorioPage() {
                   return trab;
                 }) || [];
 
-              const nomeCafe = s.cafes?.nome || "Café não informado";
+                const nomeCafe = Array.isArray(s.cafes)
+                  ? (s.cafes[0]?.nome || "Café não informado")
+                  : (s.cafes?.nome || "Café não informado");
 
+
+console.log(resultado.servicos)
               return (
                 <div key={idx} className="border rounded p-3 mt-3">
                   <h4 className="font-semibold">
@@ -134,7 +138,7 @@ export default function RelatorioPage() {
                   </h4>
 
                   <h4 className="font-semibold">
-                    LOCAL: {resultado.nome_cafe_historico}
+                    LOCAL: {nomeCafe}
                   </h4>
 
 

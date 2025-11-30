@@ -152,13 +152,13 @@ export default function CovasPage() {
       <ul className="list-disc pl-6 mb-6">
         {Object.entries(talhoesAgrupados).map(([talhao, total]) => (
           <li key={talhao}>
-            <b>{talhao}</b>: {total} covas
+            <b>{talhao}</b>: {total.toLocaleString("pt-BR")} covas
           </li>
         ))}
       </ul>
 
       <p className="text-lg font-bold mb-8">
-        🌱 Total geral em todos os talhões: {totalGeral} covas
+        🌱 Total geral em todos os talhões: {totalGeral.toLocaleString("pt-BR")} covas
       </p>
 
       {/* LISTAGEM */}

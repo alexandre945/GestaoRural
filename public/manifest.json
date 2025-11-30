@@ -16,5 +16,18 @@
       "sizes": "512x512",
       "type": "image/png"
     }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/tela1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+      {
+    "src": "/screenshots/tela2.png",
+    "sizes": "1080x1920",
+    "type": "image/png"
+  }
   ]
 }

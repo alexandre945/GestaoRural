@@ -70,10 +70,11 @@ export async function GET(request: Request) {
       data,
       quantidade,
       cafe_id,
+      cafes: cafe_id ( id, nome ),
       servicos ( id, nome, exige_quantidade ),
       servicos_trabalhadores (
-        trabalhador_id,
-        trabalhadores ( id, nome, valor_diaria )
+      trabalhador_id,
+      trabalhadores ( id, nome, valor_diaria )
       )
     `)
     .eq("data", dataFiltro);

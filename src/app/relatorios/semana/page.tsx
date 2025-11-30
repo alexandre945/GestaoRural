@@ -118,7 +118,10 @@ export default function RelatorioSemanaPage() {
 
           <p className="text-lg font-semibold text-right">
             Total geral na semana:{" "}
-            R$ {resultado.total_geral.toFixed(2).replace(".", ",")}
+            R$ {resultado.total_geral.toLocaleString("pt-BR",{
+              style: "currency",
+              currency: "BRL",
+            })}
           </p>
         </div>
       )}
