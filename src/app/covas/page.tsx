@@ -93,7 +93,7 @@ export default function CovasPage() {
       <h1 className="text-2xl font-bold mb-6">🌱 Registrar Covas</h1>
 
       {/* FORM */}
-      <div className="bg-white p-4 rounded shadow mb-8 space-y-4">
+      <div className="border p-4 rounded shadow mb-8 space-y-4">
         <input
           type="date"
           className="p-2 border rounded w-full"
@@ -141,7 +141,7 @@ export default function CovasPage() {
 
         <button
           onClick={criar}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          className="bg-green-600  px-4 py-2 rounded hover:bg-green-700"
         >
           Registrar Cova
         </button>
@@ -166,7 +166,7 @@ export default function CovasPage() {
 
       <div className="space-y-4">
         {covas.map((c) => (
-          <div key={c.id} className="bg-white p-4 rounded shadow">
+          <div key={c.id} className="border p-4 rounded shadow">
             <p><b>Data:</b> {c.data}</p>
             <p><b>Quantidade:</b> {c.quantidade}</p>
 

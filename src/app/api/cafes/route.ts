@@ -1,49 +1,81 @@
 import { supabase } from "@/lib/supabase";
+import { NextResponse } from "next/server";
 
 export async function GET() {
-  const { data, error } = await supabase.from("cafes").select("*");
+  const { data, error } = await supabase.from("cafes").select("*").order("id");
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ message: "Erro ao buscar cafés" }, { status: 500 });
   }
 
-  return Response.json(data);
+  return NextResponse.json(data);
 }
-  
-// CADASTRAR UM NOVO CAFÉ
+
 export async function POST(req: Request) {
-  const body = await req.json();
-  const { nome } = body;
+  const { nome } = await req.json();
 
-  if (!nome) {
-    return Response.json({ error: "Nome é obrigatório" }, { status: 400 });
+  if (!nome || nome.trim() === "") {
+    return NextResponse.json({ message: "Nome do café é obrigatório" }, { status: 400 });
   }
 
-  const { data, error } = await supabase.
-  from("cafes")
-  .insert([{ nome }])
-  .select();
+  const { data, error } = await supabase
+    .from("cafes")
+    .insert([{ nome: nome.trim() }])
+    .select("id, nome");
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { message: "Erro ao salvar café: " + error.message },
+      { status: 500 }
+    );
   }
 
-  return Response.json({ message: "Café cadastrado", data }, { status: 201 });
+  return NextResponse.json({
+    message: "Café cadastrado com sucesso! ☕",
+    cafe: data[0],
+  });
 }
+
 export async function DELETE(req: Request) {
   const { id } = await req.json();
 
   if (!id) {
-    return Response.json({ error: "ID é obrigatório" }, { status: 400 });
+    return NextResponse.json({ message: "ID do café é obrigatório" }, { status: 400 });
   }
 
   const { error } = await supabase.from("cafes").delete().eq("id", id);
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { message: "Erro ao excluir café: " + error.message },
+      { status: 500 }
+    );
   }
 
-  return Response.json({ message: "Café excluído com sucesso" }, { status: 200 });
+  return NextResponse.json({ message: "Café removido com sucesso! 🗑️" });
+}
+export async function PUT(req: Request) {
+  const { id, nome } = await req.json();
+
+  if (!id || !nome || nome.trim() === "") {
+    return NextResponse.json(
+      { message: "ID e nome são obrigatórios" },
+      { status: 400 }
+    );
+  }
+
+  const { error } = await supabase
+    .from("cafes")
+    .update({ nome: nome.trim() })
+    .eq("id", id);
+
+  if (error) {
+    return NextResponse.json(
+      { message: "Erro ao atualizar café: " + error.message },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ message: "Café atualizado com sucesso! ✏️" });
 }
 
-       

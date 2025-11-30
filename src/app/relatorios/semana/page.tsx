@@ -45,8 +45,8 @@ export default function RelatorioSemanaPage() {
       <h1 className="text-2xl font-bold mb-2">📆 Relatório Semanal de Diárias</h1>
 
       {/* FORM */}
-      <div className="bg-white p-4 rounded shadow space-y-4">
-        <p className="text-sm text-gray-600">
+      <div className="border p-4 rounded shadow space-y-4">
+        <p className="text-sm">
           Escolha uma data. O sistema vai calcular a semana de{" "}
           <b>segunda a sábado</b> que contém essa data.
         </p>
@@ -70,7 +70,7 @@ export default function RelatorioSemanaPage() {
       {carregando && <p>Carregando relatório semanal...</p>}
 
       {resultado && (
-        <div className="bg-white p-4 rounded shadow space-y-4">
+        <div className="border p-4 rounded shadow space-y-4">
           <h2 className="text-xl font-bold mb-2">
             📆 Semana {resultado.semana.inicio} → {resultado.semana.fim}
           </h2>
@@ -83,7 +83,7 @@ export default function RelatorioSemanaPage() {
             ) : (
               <table className="w-full border text-sm">
                 <thead>
-                  <tr className="bg-gray-100">
+                  <tr className="bg-gray-500">
                     <th className="border px-2 py-1 text-left">Trabalhador</th>
                     <th className="border px-2 py-1 text-center">
                       Dias trabalhados

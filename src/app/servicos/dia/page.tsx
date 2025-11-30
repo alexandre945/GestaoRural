@@ -154,7 +154,7 @@ export default function ServicosDiaPage() {
 
       <div className="space-y-4">
         {registros.map((r) => (
-          <div key={r.id} className="bg-white p-4 rounded shadow">
+          <div key={r.id} className="border p-4 rounded shadow">
 
             <p><b>Data:</b> {r.data}</p>
             <p><b>Serviço:</b> {r.servicos?.nome}</p>

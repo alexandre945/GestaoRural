@@ -49,7 +49,7 @@ export default function ServicosPage() {
       <h1 className="text-2xl font-bold mb-6">🛠️ Serviços</h1>
 
       {/* FORM */}
-      <div className="bg-white p-4 rounded shadow mb-8 space-y-4">
+      <div className=" p-4 rounded shadow mb-8 space-y-4">
 
         <input
           type="text"
@@ -81,7 +81,7 @@ export default function ServicosPage() {
 
       <div className="space-y-4">
         {servicos.map((s) => (
-          <div key={s.id} className="bg-white p-4 rounded shadow">
+          <div key={s.id} className=" border p-4 rounded shadow">
             <p>
               <b>Serviço:</b> {s.nome}
             </p>

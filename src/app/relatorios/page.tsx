@@ -25,7 +25,7 @@ export default function RelatorioPage() {
       <h1 className="text-2xl font-bold mb-6">📊 Relatório Diário</h1>
 
       {/* FORM */}
-      <div className="bg-white p-4 rounded shadow mb-6 space-y-4">
+      <div className="border p-4 rounded shadow mb-6 space-y-4">
         <input
           type="date"
           className="p-2 border rounded w-full"
@@ -46,7 +46,7 @@ export default function RelatorioPage() {
 
       {/* RESULTADO */}
       {resultado && (
-        <div className="bg-white p-4 rounded shadow space-y-6">
+        <div className="border p-4 rounded shadow space-y-6">
 
           <h2 className="text-xl font-bold">📅 {resultado.data}</h2>
 
@@ -130,7 +130,7 @@ export default function RelatorioPage() {
                   : (s.cafes?.nome || "Café não informado");
 
 
-console.log(resultado.servicos)
+
               return (
                 <div key={idx} className="border rounded p-3 mt-3">
                   <h4 className="font-semibold">
