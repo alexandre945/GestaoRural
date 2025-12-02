@@ -8,12 +8,12 @@ type Cova = {
   quantidade: number;
   talhoes?: { id: number; nome: string } | null;
   covas_trabalhadores?: {
-    trabalhador_id: number;
-    trabalhadores?: {
-      id: number;
-      nome: string;
-      valor_diaria: number;
-    } | null;
+  trabalhador_id: number;
+  trabalhadores?: {
+  id: number;
+  nome: string;
+  valor_diaria: number;
+  } | null;
   }[];
 };
 
@@ -149,7 +149,7 @@ export default function CovasPage() {
 
       {/* TOTAL POR TALHÃO */}
       <h2 className="text-xl font-bold mb-3">🌾 Total por Talhão</h2>
-      <ul className="list-disc pl-6 mb-6">
+      <ul className="list-disc pl-6 mb-6  text-black dark:bg-gray-900 dark:text-white p-4 rounded ">
         {Object.entries(talhoesAgrupados).map(([talhao, total]) => (
           <li key={talhao}>
             <b>{talhao}</b>: {total.toLocaleString("pt-BR")} covas
@@ -164,7 +164,7 @@ export default function CovasPage() {
       {/* LISTAGEM */}
       <h2 className="text-xl font-bold mb-3">📋 Registros</h2>
 
-      <div className="space-y-4">
+      <div className="space-y-4 bg-white text-black dark:bg-gray-900 p-4 rounded dark:text-white">
         {covas.map((c) => (
           <div key={c.id} className="border p-4 rounded shadow">
             <p><b>Data:</b> {c.data}</p>

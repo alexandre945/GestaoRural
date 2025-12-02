@@ -74,9 +74,11 @@ export default function TrabalhadoresPage() {
         {lista.map((t) => (
           <li
             key={t.id}
-            className="border p-3 rounded shadow flex justify-between"
+            className="border p-3 rounded shadow flex justify-between 
+            bg-white text-black 
+            dark:bg-gray-900 dark:text-white"
           >
-            <span>
+            <span >
               {t.nome} — R$ {t.valor_diaria.toFixed(2).replace(".", ",")}
             </span>
 

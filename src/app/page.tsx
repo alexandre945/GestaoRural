@@ -77,7 +77,7 @@ export default function Home() {
         </a>
 
         <a href="/relatorios" className="border p-4 rounded-lg shadow hover:shadow-md transition text-center font-semibold">
-          📊 Relatórios
+          📊 Relatórios Diaríos
         </a>
 
         <a href="/relatorios/semana" className="border p-4 rounded-lg shadow hover:shadow-md transition text-center font-semibold">

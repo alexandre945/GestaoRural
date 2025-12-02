@@ -21,14 +21,20 @@ export default function RelatorioPage() {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-6 max-w-2xl mx-auto suppressHydrationWarning">
       <h1 className="text-2xl font-bold mb-6">📊 Relatório Diário</h1>
 
       {/* FORM */}
-      <div className="border p-4 rounded shadow mb-6 space-y-4">
+      <div className="border p-4 rounded shadow mb-6 space-y-4 suppressHydrationWarning">
+
         <input
           type="date"
-          className="p-2 border rounded w-full"
+          className="
+            p-2 border rounded w-full
+            bg-gray-900 text-white
+            [&::-webkit-calendar-picker-indicator]:opacity-100
+            [&::-webkit-calendar-picker-indicator]:invert
+          "
           value={data}
           onChange={(e) => setData(e.target.value)}
         />
@@ -42,7 +48,11 @@ export default function RelatorioPage() {
       </div>
 
       {/* LOADING */}
-      {carregando && <p>Carregando relatório...</p>}
+      {carregando && (
+          <div className="flex justify-center my-6">
+            <div className="h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
 
       {/* RESULTADO */}
       {resultado && (
@@ -175,7 +185,7 @@ export default function RelatorioPage() {
           {/* ----------------- TOTAL GERAL ----------------------------- */}
           <p className="text-lg mt-4">
             <b>Total mão de obra:</b>{" "}
-            {Number(resultado.total_mao_de_obra).toLocaleString("pt-BR", {
+            {Number(resultado.total_mao_de_obra).toLocaleString("pt-BR",{
               style: "currency",
               currency: "BRL",
             })}

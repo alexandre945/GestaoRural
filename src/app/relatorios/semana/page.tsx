@@ -45,7 +45,7 @@ export default function RelatorioSemanaPage() {
       <h1 className="text-2xl font-bold mb-2">📆 Relatório Semanal de Diárias</h1>
 
       {/* FORM */}
-      <div className="border p-4 rounded shadow space-y-4">
+      <div className="border p-4 rounded shadow space-y-4 suppressHydrationWarning">
         <p className="text-sm">
           Escolha uma data. O sistema vai calcular a semana de{" "}
           <b>segunda a sábado</b> que contém essa data.
@@ -67,7 +67,12 @@ export default function RelatorioSemanaPage() {
       </div>
 
       {/* RESULTADO */}
-      {carregando && <p>Carregando relatório semanal...</p>}
+          {carregando && (
+          <div className="flex justify-center my-6">
+            <div className="h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
+
 
       {resultado && (
         <div className="border p-4 rounded shadow space-y-4">
