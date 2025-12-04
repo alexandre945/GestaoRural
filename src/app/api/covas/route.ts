@@ -58,8 +58,8 @@ export async function GET() {
       talhao_id,
       talhoes ( id, nome ),
       covas_trabalhadores (
-        trabalhador_id,
-        trabalhadores ( id, nome, valor_diaria )
+      trabalhador_id,
+      trabalhadores ( id, nome, valor_diaria )
       )
     `)
     .order("id", { ascending: true });

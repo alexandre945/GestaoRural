@@ -54,6 +54,7 @@ export async function DELETE(req: Request) {
 
   return NextResponse.json({ message: "Café removido com sucesso! 🗑️" });
 }
+
 export async function PUT(req: Request) {
   const { id, nome } = await req.json();
 

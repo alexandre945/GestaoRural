@@ -66,7 +66,29 @@ export async function GET() {
     return Response.json({ error: error.message }, { status: 500 });
   }
 
-  return Response.json(data);
+  // 🔧 AJUSTE DO VALOR DA DIÁRIA SOMENTE QUANDO O SERVIÇO FOR ROÇADEIRA
+  const ajustado = data.map((registro: any) => {
+    const nomeServico = registro.servicos?.nome?.toLowerCase();
+
+    const isRocadeira =
+      nomeServico === "roçadeira" || nomeServico === "rocadeira";
+
+    if (isRocadeira) {
+      registro.servicos_trabalhadores = registro.servicos_trabalhadores.map(
+        (st: any) => ({
+          ...st,
+          trabalhadores: {
+            ...st.trabalhadores,
+            valor_diaria: 130, // valor diferente só para este serviço
+          },
+        })
+      );
+    }
+
+    return registro;
+  });
+
+  return Response.json(ajustado);
 }
 
 export async function DELETE(request: Request) {

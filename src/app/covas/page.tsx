@@ -94,9 +94,14 @@ export default function CovasPage() {
 
       {/* FORM */}
       <div className="border p-4 rounded shadow mb-8 space-y-4">
-        <input
+       <input
           type="date"
-          className="p-2 border rounded w-full"
+          className="
+            p-2 border rounded w-full
+            bg-gray-900 text-white
+            [&::-webkit-calendar-picker-indicator]:opacity-100
+            [&::-webkit-calendar-picker-indicator]:invert
+          "
           value={data}
           onChange={(e) => setData(e.target.value)}
         />
@@ -104,7 +109,7 @@ export default function CovasPage() {
         <input
           type="number"
           placeholder="Quantidade de covas"
-          className="p-2 border rounded w-full"
+          className="p-2 border bg-gray-900 rounded w-full"
           value={quantidade}
           onChange={(e) => setQuantidade(e.target.value)}
         />
@@ -117,7 +122,7 @@ export default function CovasPage() {
         >
           <option value="">Selecione um Talhão</option>
           {talhoes.map((t) => (
-            <option key={t.id} value={t.id}>
+            <option className="text-black " key={t.id} value={t.id}>
               {t.nome}
             </option>
           ))}

@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function RelatorioPage() {
   const [data, setData] = useState("");
   const [resultado, setResultado] = useState<any>(null);
   const [carregando, setCarregando] = useState(false);
+  const [mounted, setMounted] = useState(false); // 👈 EVITA HYDRATION ERROR
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null; // 👈 IMPEDE RENDER NO SSR
 
   const gerarRelatorio = async () => {
     if (!data) return alert("Selecione uma data.");
@@ -21,12 +28,11 @@ export default function RelatorioPage() {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto suppressHydrationWarning">
+    <div className="p-6 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">📊 Relatório Diário</h1>
 
       {/* FORM */}
-      <div className="border p-4 rounded shadow mb-6 space-y-4 suppressHydrationWarning">
-
+      <div className="border p-4 rounded shadow mb-6 space-y-4">
         <input
           type="date"
           className="
@@ -49,10 +55,10 @@ export default function RelatorioPage() {
 
       {/* LOADING */}
       {carregando && (
-          <div className="flex justify-center my-6">
-            <div className="h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
+        <div className="flex justify-center my-6">
+          <div className="h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
 
       {/* RESULTADO */}
       {resultado && (
@@ -90,10 +96,9 @@ export default function RelatorioPage() {
                 const trabalhadoresCovas = resultado.covas
                   .flatMap((c: any) =>
                     c.covas_trabalhadores.map((ct: any) => {
-                      const trab = Array.isArray(ct.trabalhadores)
+                      return Array.isArray(ct.trabalhadores)
                         ? ct.trabalhadores[0]
                         : ct.trabalhadores;
-                      return trab;
                     })
                   )
                   .filter(Boolean);
@@ -128,31 +133,27 @@ export default function RelatorioPage() {
 
             {resultado.servicos.map((s: any, idx: number) => {
               const trabalhadores =
-                s.servicos_trabalhadores?.map((st: any) => {
-                  const trab = Array.isArray(st.trabalhadores)
+                s.servicos_trabalhadores?.map((st: any) =>
+                  Array.isArray(st.trabalhadores)
                     ? st.trabalhadores[0]
-                    : st.trabalhadores;
-                  return trab;
-                }) || [];
+                    : st.trabalhadores
+                ) || [];
 
-                const nomeCafe = Array.isArray(s.cafes)
-                  ? (s.cafes[0]?.nome || "Café não informado")
-                  : (s.cafes?.nome || "Café não informado");
-
-
+              // 👈 AGORA O NOME DO CAFÉ ESTÁ CORRETO POR SERVIÇO
+              const nomeCafe = Array.isArray(s.cafes)
+                ? s.cafes[0]?.nome || "Café não informado"
+                : s.cafes?.nome || "Café não informado";
 
               return (
                 <div key={idx} className="border rounded p-3 mt-3">
                   <h4 className="font-semibold">
-                    SERVIÇO: {s.servicos?.nome || "Serviço"}
+                    SERVIÇO: {s.servicos?.nome}
                   </h4>
 
                   <h4 className="font-semibold">
                     LOCAL: {nomeCafe}
                   </h4>
 
-
-                  {/* QUANTIDADE */}
                   {s.servicos?.exige_quantidade && (
                     <p>
                       Quantidade:{" "}
@@ -160,23 +161,18 @@ export default function RelatorioPage() {
                     </p>
                   )}
 
-                  {/* TRABALHADORES DO SERVIÇO */}
                   <p className="mt-2 font-semibold">👷 Trabalhadores:</p>
-                  {trabalhadores.length === 0 ? (
-                    <p>Nenhum trabalhador vinculado.</p>
-                  ) : (
-                    <ul className="list-disc pl-6">
-                      {trabalhadores.map((t: any, i: number) => (
-                        <li key={i}>
-                          {t.nome} —{" "}
-                          {Number(t.valor_diaria).toLocaleString("pt-BR", {
-                            style: "currency",
-                            currency: "BRL",
-                          })}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <ul className="list-disc pl-6">
+                    {trabalhadores.map((t: any, i: number) => (
+                      <li key={i}>
+                        {t.nome} —{" "}
+                        {Number(t.valor_diaria).toLocaleString("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        })}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               );
             })}
@@ -185,7 +181,7 @@ export default function RelatorioPage() {
           {/* ----------------- TOTAL GERAL ----------------------------- */}
           <p className="text-lg mt-4">
             <b>Total mão de obra:</b>{" "}
-            {Number(resultado.total_mao_de_obra).toLocaleString("pt-BR",{
+            {Number(resultado.total_mao_de_obra).toLocaleString("pt-BR", {
               style: "currency",
               currency: "BRL",
             })}

@@ -11,113 +11,129 @@ export async function GET(request: Request) {
     );
   }
 
-  const SERVICO_PLANTACAO_ID = 7;
+  // ------------------------------------------
+  // 1️⃣ HISTÓRICO DE PLANTAÇÃO (TOTAL GERAL)
+  // ------------------------------------------
 
-  // HISTÓRICO DE PLANTAÇÃO DE CAFÉ (TODOS OS DIAS)
-  const { data: historicoPlantio } = await supabase
+  const SERVICO_PLANTACAO_ID = 7; // ID do serviço PLANTIO
+
+  const { data: historicoPlantioRaw } = await supabase
     .from("servicos_dia")
     .select(`
       quantidade,
-      cafe_id,
-      servicos ( id, nome )
+      cafe_id
     `)
     .eq("servico_id", SERVICO_PLANTACAO_ID);
 
-  const total_geral_plantado =
-    historicoPlantio?.reduce(
-      (acc, item) => acc + (Number(item.quantidade) || 0),
-      0
-    ) || 0;
+  const historicoPlantio = historicoPlantioRaw ?? [];
 
-  // BUSCA NOME DO CAFÉ PELO cafe_id DO HISTÓRICO
-  let nome_cafe_historico = "Café não informado";
+  const total_geral_plantado = historicoPlantio.reduce(
+    (acc, item) => acc + (Number(item.quantidade) || 0),
+    0
+  );
 
-  if (historicoPlantio && historicoPlantio.length > 0) {
-    const cafeId = historicoPlantio[0].cafe_id;
+// NOME DO CAFÉ VINCULADO À PLANTAÇÃO
+let nome_cafe_historico = null;
 
-    if (cafeId) {
-      const { data: cafeInfo } = await supabase
-        .from("cafes")
-        .select("nome")
-        .eq("id", cafeId)
-        .single();
+// procurar o primeiro registro que realmente tenha um cafe_id
+const primeiroComCafe = historicoPlantio.find((item) => item.cafe_id);
 
-      nome_cafe_historico = cafeInfo?.nome || "Café não informado";
-    }
-  }
+if (primeiroComCafe?.cafe_id) {
+  const { data: cafeInfo } = await supabase
+    .from("cafes")
+    .select("nome")
+    .eq("id", primeiroComCafe.cafe_id)
+    .single();
 
-  // COVAS DO DIA
+  nome_cafe_historico = cafeInfo?.nome || null;
+}
+
+
+  // ------------------------------------------
+  // 2️⃣ COVAS DO DIA
+  // ------------------------------------------
+
   const { data: covas, error: erroCovas } = await supabase
     .from("covas")
     .select(`
       id,
       data,
       quantidade,
-      talhao_id,
       talhoes ( id, nome ),
       covas_trabalhadores (
-        trabalhador_id,
         trabalhadores ( id, nome, valor_diaria )
       )
     `)
     .eq("data", dataFiltro);
 
-  // SERVIÇOS DO DIA
-  const { data: servicos, error: erroServ } = await supabase
+  if (erroCovas) {
+    return Response.json({ error: erroCovas.message }, { status: 500 });
+  }
+
+  const total_covas = covas?.reduce((acc, c) => acc + c.quantidade, 0) || 0;
+
+  const por_talhao: Record<string, number> = {};
+  covas?.forEach((c) => {
+    const talhaoObj = Array.isArray(c.talhoes) ? c.talhoes[0] : c.talhoes;
+    por_talhao[talhaoObj?.nome ?? "Talhão Desconhecido"] =
+      (por_talhao[talhaoObj?.nome ?? "Talhão Desconhecido"] || 0) + c.quantidade;
+  });
+
+  // ------------------------------------------
+  // 3️⃣ SERVIÇOS DO DIA + AJUSTE ROÇADEIRA = 130
+  // ------------------------------------------
+
+  const { data: servicosDia, error: erroServ } = await supabase
     .from("servicos_dia")
     .select(`
       id,
-      data,
       quantidade,
       cafe_id,
       cafes: cafe_id ( id, nome ),
-      servicos ( id, nome, exige_quantidade ),
+      servicos ( nome ),
       servicos_trabalhadores (
-      trabalhador_id,
       trabalhadores ( id, nome, valor_diaria )
       )
     `)
     .eq("data", dataFiltro);
 
-  if (erroCovas || erroServ) {
-    return Response.json(
-      { error: erroCovas?.message || erroServ?.message },
-      { status: 500 }
-    );
+  if (erroServ) {
+    return Response.json({ error: erroServ.message }, { status: 500 });
   }
 
-  // SOMA TOTAL DE COVAS NO DIA
-  const total_covas = covas?.reduce((acc, c) => acc + c.quantidade, 0) || 0;
+  const servicosAjustados = servicosDia.map((s: any) => {
+    const nomeServico = s.servicos?.nome?.toLowerCase();
+    const isRocadeira =
+      nomeServico === "roçadeira" || nomeServico === "rocadeira";
 
-  // COVAS POR TALHÃO
-  const por_talhao: Record<string, number> = {};
+    if (isRocadeira) {
+      s.servicos_trabalhadores = s.servicos_trabalhadores.map((st: any) => ({
+        ...st,
+        trabalhadores: {
+          ...st.trabalhadores,
+          valor_diaria: 130, // 👈 diária diferenciada
+        },
+      }));
+    }
 
-  covas?.forEach((c) => {
-    const talhaoObj = Array.isArray(c.talhoes) ? c.talhoes[0] : c.talhoes;
-    const nomeTalhao = talhaoObj?.nome ?? "Talhão Desconhecido";
-    por_talhao[nomeTalhao] = (por_talhao[nomeTalhao] || 0) + c.quantidade;
+    return s;
   });
 
-  // TRABALHADORES ENVOLVIDOS
+  // ------------------------------------------
+  // 4️⃣ TRABALHADORES ENVOLVIDOS + TOTAL MÃO DE OBRA
+  // ------------------------------------------
+
   const trabMap = new Map<string, number>();
 
   covas?.forEach((c) => {
-    c.covas_trabalhadores?.forEach((ct) => {
-      const trab = Array.isArray(ct.trabalhadores)
-        ? ct.trabalhadores[0]
-        : ct.trabalhadores;
-
-      if (trab) trabMap.set(trab.nome, trab.valor_diaria);
+    c.covas_trabalhadores?.forEach((ct: any) => {
+      trabMap.set(ct.trabalhadores.nome, ct.trabalhadores.valor_diaria);
     });
   });
 
-  servicos?.forEach((s) => {
-    s.servicos_trabalhadores?.forEach((st) => {
-      const trab = Array.isArray(st.trabalhadores)
-        ? st.trabalhadores[0]
-        : st.trabalhadores;
-
-      if (trab) trabMap.set(trab.nome, trab.valor_diaria);
+  servicosAjustados.forEach((s: any) => {
+    s.servicos_trabalhadores?.forEach((st: any) => {
+      trabMap.set(st.trabalhadores.nome, st.trabalhadores.valor_diaria);
     });
   });
 
@@ -126,7 +142,7 @@ export async function GET(request: Request) {
   );
 
   const total_mao_de_obra = trabalhadores_envolvidos.reduce(
-    (acc, t) => acc + t.valor_diaria,
+    (acc, t) => acc + Number(t.valor_diaria),
     0
   );
 
@@ -139,9 +155,8 @@ export async function GET(request: Request) {
     })),
     total_geral_plantado,
     nome_cafe_historico,
-    covas,
     trabalhadores_envolvidos,
     total_mao_de_obra,
-    servicos,
+    servicos: servicosAjustados,
   });
 }
